@@ -1,0 +1,152 @@
+<p-toast />
+
+<div class="flex flex-col gap-4">
+
+  <!-- Actions -->
+  <p-card header="New Deployment">
+    <div class="flex gap-3">
+      <p-button
+        label="Pilot Deployment"
+        icon="pi pi-send"
+        severity="warn"
+        (onClick)="openPilotDialog()" />
+
+      <p-button
+        label="Full Deployment"
+        icon="pi pi-globe"
+        severity="danger"
+        (onClick)="openFullDialog()" />
+    </div>
+  </p-card>
+
+  <!-- Last Deployment Result -->
+  <p-card *ngIf="lastDeployment" header="Last Deployment Result">
+    <div class="flex flex-col gap-3">
+
+      <div class="flex gap-4">
+            <span>
+              <strong>Version:</strong>
+              {{ lastDeployment.version }}
+            </span>
+        <span>
+              <strong>Type:</strong>
+              <p-tag
+                [value]="lastDeployment.deploymentType"
+                [severity]="lastDeployment.deploymentType === 'PILOT' ? 'warn' : 'danger'"
+                class="ml-1" />
+            </span>
+        <span>
+              <strong>Status:</strong>
+              <p-tag
+                [value]="lastDeployment.status"
+                [severity]="statusSeverity(lastDeployment.status)"
+                class="ml-1" />
+            </span>
+        <span><strong>By:</strong> {{ lastDeployment.createdBy }}</span>
+      </div>
+
+      <p-table [value]="lastDeployment.deploymentClients" stripedRows>
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Client ID</th>
+            <th>Status</th>
+            <th>Started</th>
+            <th>Finished</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-dc>
+          <tr>
+            <td>{{ dc.clientId }}</td>
+            <td>
+              <p-tag
+                [value]="dc.status"
+                [severity]="statusSeverity(dc.status)" />
+            </td>
+            <td>{{ dc.startedAt | date:'HH:mm:ss' }}</td>
+            <td>{{ dc.finishedAt | date:'HH:mm:ss' }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </p-card>
+
+</div>
+
+<!-- Pilot Dialog -->
+<p-dialog
+  header="Pilot Deployment"
+  [(visible)]="pilotDialogVisible"
+  [style]="{ width: '500px' , height: '600px'}"
+  [modal]="true">
+
+  <div class="flex flex-col gap-3 mt-2">
+
+    <div class="flex flex-col gap-1">
+      <label>Version <span class="text-red-500">*</span></label>
+      <p-select
+        [options]="versions"
+        [(ngModel)]="selectedVersionId"
+        optionLabel="versionNumber"
+        optionValue="id"
+        placeholder="Select version" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label>Select Clients (2-3 recommended) <span class="text-red-500">*</span></label>
+      <p-multiSelect
+        [options]="clients"
+        [(ngModel)]="selectedClientIds"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Select clients"
+        display="chip" />
+    </div>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" [text]="true" (onClick)="pilotDialogVisible = false" />
+    <p-button
+      label="Deploy"
+      severity="warn"
+      [loading]="deploying"
+      [disabled]="!selectedVersionId || selectedClientIds.length === 0"
+      (onClick)="deployPilot()" />
+  </ng-template>
+</p-dialog>
+
+<!-- Full Dialog -->
+<p-dialog
+  header="Full Deployment"
+  [(visible)]="fullDialogVisible"
+  [style]="{ width: '400px' , height: '600px'}"
+  [modal]="true">
+
+  <div class="flex flex-col gap-3 mt-2">
+    <p-tag severity="danger" value="WARNING" />
+    <p class="text-gray-700">
+      This will deploy the selected version to <strong>ALL clients</strong>.
+      Make sure you have tested with a pilot deployment first.
+    </p>
+
+    <div class="flex flex-col gap-1">
+      <label>Version <span class="text-red-500">*</span></label>
+      <p-select
+        [options]="versions"
+        [(ngModel)]="selectedVersionId"
+        optionLabel="versionNumber"
+        optionValue="id"
+        placeholder="Select version" />
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" [text]="true" (onClick)="fullDialogVisible = false" />
+    <p-button
+      label="Deploy to All"
+      severity="danger"
+      [loading]="deploying"
+      [disabled]="!selectedVersionId"
+      (onClick)="deployFull()" />
+  </ng-template>
+</p-dialog>

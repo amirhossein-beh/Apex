@@ -10,5 +10,5 @@ import java.util.UUID;
 @Repository
 public interface TrafficLogRepository extends JpaRepository<TrafficLog, UUID> {
     List<TrafficLog> findByClientIdOrderByReceivedAtDesc(UUID clientId);
-//    List<TrafficLog> findByForwardedToGhaidirFalse();
+    List<TrafficLog> findByRefIdIsNull();
 }

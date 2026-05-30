@@ -1,0 +1,130 @@
+<p-toast />
+
+<p-card header="Version Management">
+
+  <ng-template pTemplate="header">
+    <div class="flex justify-content-end p-3">
+      <p-button
+        label="Upload New Version"
+        icon="pi pi-upload"
+        (onClick)="uploadDialogVisible = true" />
+    </div>
+  </ng-template>
+
+  <p-table [value]="versions" [loading]="loading" stripedRows>
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Version</th>
+        <th>Checksum</th>
+        <th>Mandatory</th>
+        <th>Min Version</th>
+        <th>Status</th>
+        <th>Created By</th>
+        <th>Created At</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-version>
+      <tr>
+        <td><strong>{{ version.versionNumber }}</strong></td>
+        <td>
+              <span class="text-xs text-gray-500">
+                {{ version.checksum | slice:0:16 }}...
+              </span>
+        </td>
+        <td>
+          <p-tag
+            [value]="version.mandatory ? 'Yes' : 'No'"
+            [severity]="version.mandatory ? 'danger' : 'secondary'" />
+        </td>
+        <td>{{ version.minVersion ?? '-' }}</td>
+        <td>
+          <p-tag
+            [value]="version.active ? 'Active' : 'Inactive'"
+            [severity]="version.active ? 'success' : 'secondary'" />
+        </td>
+        <td>{{ version.createdBy }}</td>
+        <td>{{ version.createdAt | date:'yyyy/MM/dd' }}</td>
+        <td>
+          <p-button
+            *ngIf="!version.active"
+            label="Activate"
+            icon="pi pi-check"
+            severity="success"
+            [text]="true"
+            (onClick)="activate(version)" />
+          <span *ngIf="version.active" class="text-green-500 text-sm">
+                <i class="pi pi-check-circle"></i> Active
+              </span>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="8" class="text-center">No versions found</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<!-- Upload Dialog -->
+<p-dialog
+  header="Upload New Version"
+  [(visible)]="uploadDialogVisible"
+  [style]="{ width: '500px' }"
+  [modal]="true">
+
+  <div class="flex flex-col gap-3 mt-2">
+
+    <div class="flex flex-col gap-1">
+      <label>Version Number <span class="text-red-500">*</span></label>
+      <input pInputText [(ngModel)]="form.versionNumber" placeholder="1.0.0" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label>Min Version</label>
+      <input pInputText [(ngModel)]="form.minVersion" placeholder="1.0.0" />
+    </div>
+
+    <div class="flex items-center gap-2">
+      <p-checkbox [(ngModel)]="form.mandatory" [binary]="true" inputId="mandatory" />
+      <label for="mandatory">Mandatory Update</label>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label>Release Notes</label>
+      <textarea
+        pTextarea
+        [(ngModel)]="form.releaseNotes"
+        rows="3"
+        placeholder="What's new in this version...">
+          </textarea>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label>Package File (zip) <span class="text-red-500">*</span></label>
+      <p-fileUpload
+        mode="basic"
+        accept=".zip"
+        [auto]="false"
+        chooseLabel="Choose File"
+        (onSelect)="onFileSelect($event)" />
+      <span *ngIf="selectedFile" class="text-sm text-green-500">
+            <i class="pi pi-file"></i> {{ selectedFile.name }}
+          </span>
+    </div>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" [text]="true" (onClick)="closeUploadDialog()" />
+    <p-button
+      label="Upload"
+      icon="pi pi-upload"
+      [loading]="uploading"
+      [disabled]="!form.versionNumber || !selectedFile"
+      (onClick)="upload()" />
+  </ng-template>
+</p-dialog>

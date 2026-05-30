@@ -30,16 +30,14 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // هدر Authorization رو میخونه
         String authHeader = request.getHeader("Authorization");
-        log.debug("Auth header: {}", authHeader);
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7); // "Bearer " رو حذف میکنه
+            String token = authHeader.substring(7);
 
             if (jwtUtil.validateToken(token)) {
                 String username = jwtUtil.getUsernameFromToken(token);
                 String role = jwtUtil.getRoleFromToken(token);
 
-                // به Spring Security میگه این یوزر احراز هویت شده
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 username,

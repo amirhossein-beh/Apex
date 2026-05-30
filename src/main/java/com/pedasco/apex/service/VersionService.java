@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,6 +39,7 @@ public class VersionService {
         version.setMinVersion(minVersion);
         version.setReleaseNotes(releaseNotes);
         version.setCreatedBy(createdBy);
+        version.setCreatedAt(LocalDateTime.now());
         version.setActive(false); // پیش‌فرض غیرفعاله، باید دستی activate بشه
 
         return versionRepository.save(version);
@@ -45,11 +47,9 @@ public class VersionService {
 
     public void activateVersion(Long versionId) {
 
-        // نسخه‌ای که میخوایم فعال کنیم پیدا کن
         Version version = versionRepository.findById(versionId)
                 .orElseThrow(() -> new RuntimeException("Version not found"));
 
-        // همه نسخه‌های فعال رو غیرفعال کن
         versionRepository.findByActiveTrue().ifPresent(active -> {
             active.setActive(false);
             versionRepository.save(active);

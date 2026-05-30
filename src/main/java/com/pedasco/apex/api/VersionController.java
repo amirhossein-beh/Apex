@@ -58,7 +58,7 @@ public class VersionController {
     @PutMapping("/{id}/activate")
     public ResponseEntity<String> activate(@PathVariable Long id) {
         versionService.activateVersion(id);
-        return ResponseEntity.ok("Version activated");
+        return ResponseEntity.ok("");
     }
 
     // نسخه فعال - برای کلاینت C# (بدون JWT)

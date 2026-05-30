@@ -1,0 +1,70 @@
+<p-toast />
+
+<p-card header="Traffic Logs">
+
+  <!-- Filter -->
+  <div class="flex align-items-center gap-3 mb-4">
+    <label>Client:</label>
+    <p-select
+      [options]="clients"
+      [(ngModel)]="selectedClientId"
+      optionLabel="name"
+      optionValue="id"
+      placeholder="Select a client"
+      (onChange)="loadTraffic()"
+      class="w-20rem">
+    </p-select>
+  </div>
+
+  <p-table
+    [value]="logs"
+    [loading]="loading"
+    [paginator]="true"
+    [rows]="20"
+    [rowsPerPageOptions]="[20 , 50 , 100]"
+    stripedRows>
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Plate</th>
+        <th>Confidence</th>
+        <th>Country</th>
+        <th>Direction</th>
+        <th>Stream</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Forwarded</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-log>
+      <tr>
+        <td><strong>{{ log.plateText }}</strong></td>
+        <td>{{ (log.confidence * 100).toFixed(1) }}%</td>
+        <td>{{ log.country }}</td>
+        <td>
+          <p-tag
+            [value]="log.direction"
+            [severity]="log.direction === 'IN' ? 'success' : 'warn'" />
+        </td>
+        <td>{{ log.streamId }}</td>
+        <td>{{ log.logDate }}</td>
+        <td>{{ log.logTime }}</td>
+        <td>
+          <p-tag
+            [value]="log.forwardedToGhadir ? 'Yes' : 'No'"
+            [severity]="log.forwardedToGhadir ? 'success' : 'secondary'" />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="8" class="text-center">
+          {{ selectedClientId ? 'No traffic logs found' : 'Select a client to view logs' }}
+        </td>
+      </tr>
+    </ng-template>
+
+  </p-table>
+</p-card>

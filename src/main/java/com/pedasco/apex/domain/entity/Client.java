@@ -1,5 +1,6 @@
 package com.pedasco.apex.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pedasco.apex.domain.enums.ClientStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,6 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+
 @Table(name = "clients")
 public class Client extends BaseEntity {
 
@@ -33,8 +35,10 @@ public class Client extends BaseEntity {
     @Column(length = 500)
     private String token;
 
+
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
     private List<ClientConfig> configs;
+
 
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
     private List<CommandLog> commandLogs;

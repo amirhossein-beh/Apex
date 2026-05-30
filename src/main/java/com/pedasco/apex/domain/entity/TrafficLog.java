@@ -53,8 +53,8 @@ public class TrafficLog {
     @Column(name = "received_at", updatable = false)
     private LocalDateTime receivedAt;
 
-    @Column(name = "forwarded_to_ghadir", nullable = false)
-    private boolean forwardedToGhadir = false;
+    @Column(name = "ref_id", nullable = true)
+    private String refId = null;
 
     @Column(name = "forwarded_at")
     private LocalDateTime forwardedAt;

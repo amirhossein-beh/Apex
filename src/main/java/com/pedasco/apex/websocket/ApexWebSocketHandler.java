@@ -6,7 +6,9 @@ import com.pedasco.apex.domain.enums.ClientStatus;
 import com.pedasco.apex.domain.enums.CommandStatus;
 import com.pedasco.apex.repository.ClientRepository;
 import com.pedasco.apex.repository.CommandLogRepository;
+import com.pedasco.apex.service.TrafficService;
 import com.pedasco.apex.websocket.dto.CommandResultPayload;
+import com.pedasco.apex.websocket.dto.TrafficLogRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -28,7 +30,7 @@ public class ApexWebSocketHandler extends TextWebSocketHandler {
     private final ClientRepository clientRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final CommandLogRepository commandLogRepository;
-
+    private final TrafficService trafficService;
     // وقتی کلاینت وصل میشه
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
@@ -68,12 +70,9 @@ public class ApexWebSocketHandler extends TextWebSocketHandler {
                     WebSocketMessage.class
             );
             switch (incoming.getType()) {
-                case "HEARTBEAT" :
-                    handleHeartbeat(session);
-                    break;
-                case "COMMAND_RESULT":
-                    handleCommandResult(incoming);
-                    break;
+                case "HEARTBEAT" ->      handleHeartbeat(session);
+                case "COMMAND_RESULT" -> handleCommandResult(incoming);
+                case "TRAFFIC_LOG" ->    handleTrafficLog(session, incoming);
             }
         }catch (Exception e){
             log.error("Error processing message" , e);
@@ -108,6 +107,22 @@ public class ApexWebSocketHandler extends TextWebSocketHandler {
         }
         commandLog.setResultAt(LocalDateTime.now());
         commandLogRepository.save(commandLog);
+    }
+
+
+    private void handleTrafficLog(WebSocketSession session , WebSocketMessage incoming){
+
+        String token = getTokenFromSession(session);
+        clientRepository.findByToken(token).ifPresent( client -> {
+            try {
+                TrafficLogRequest request = objectMapper.convertValue(
+                        incoming.getPayload(),
+                        TrafficLogRequest.class);
+                trafficService.saveTrafficLog(client.getId(), request);
+            }catch (Exception e ){
+                log.error("Failed to save traffic log from WebSocket", e);
+            }
+        });
     }
 
     // وقتی کلاینت قطع میشه
